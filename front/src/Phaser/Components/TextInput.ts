@@ -1,15 +1,3 @@
-
-const IGNORED_KEYS = new Set([
-    'Esc',
-    'Escape',
-    'Alt',
-    'Meta',
-    'Control',
-    'Ctrl',
-    'Space',
-    'Backspace'
-])
-
 export class TextInput extends Phaser.GameObjects.BitmapText {
     private minUnderLineLength = 4;
     private underLine: Phaser.GameObjects.Text;
@@ -26,26 +14,17 @@ export class TextInput extends Phaser.GameObjects.BitmapText {
         this.underLine.setOrigin(0.5);
 
         this.domInput.maxLength = maxLength;
-        this.domInput.style.opacity = "0";
+        // Make sure that now scolling is needed and that the input field is
+        // not visible
+        this.domInput.setAttribute('style', 'opacity:0;position:absolute;top:0');
         if (text) {
             this.domInput.value = text;
         }
 
-        this.domInput.addEventListener('keydown', event => {
-            if (IGNORED_KEYS.has(event.key)) {
-                return;
-            }
-
-            if (!/[a-zA-Z0-9:.!&?()+-]/.exec(event.key)) {
-                event.preventDefault();
-            }
-        });
-
         this.domInput.addEventListener('input', (event) => {
-            if (event.defaultPrevented) {
-                return;
-            }
-            this.text = this.domInput.value;
+            // Truncate the text to the maximum length, this is needed for mobile
+            // browsers that don't support the input field `maxLength` attribute
+            this.text = this.domInput.value.substr(0, maxLength);
             this.underLine.text = this.getUnderLineBody(this.text.length);
             onChange(this.text);
         });
